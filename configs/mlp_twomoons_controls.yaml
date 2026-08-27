@@ -1,0 +1,112 @@
+data:
+  dataset: two_moons
+  root: ./data
+  batch_size: 256
+  eval_batch_size: 512
+  num_workers: 0
+  val_fraction: 0.1
+  image_size: 32
+  augmentation: none
+  pin_memory: true
+  persistent_workers: false
+  seed: 0
+  hessian_batch_size: 512
+  n_train: 1200
+  n_test: 3000
+  synthetic_noise: 0.30
+
+model:
+  arch: mlp
+  input_dim: 2
+  hidden_dim: 256
+  depth: 4
+  num_classes: 2
+  pretrained: false
+  image_size: 32
+
+optim:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0001
+  momentum: 0.9
+  nesterov: false
+
+train:
+  epochs: 100
+  label_smoothing: 0.0
+  grad_clip_norm: 0.0
+  log_every: 50
+  amp: false
+  barrier_threshold: 0.1
+  history_flush_every: 5
+  show_batch_progress: false
+  force_stage_schedule_for_train_loss: false
+  force_stage_schedule_for_all_growth_runs: false
+  force_stage_schedule_weighting: stage_index
+  force_stage_schedule_gamma: 2.0
+  min_epochs_per_stage: 3
+  eval_test_every_epoch: false
+
+transition_metrics:
+  curve_points: 11
+  eval_batches: 4
+
+hessian:
+  enabled: true
+  eval_every: 1
+  power_iters: 10
+  trace_probes: 4
+  logdet_probes: 2
+  lanczos_steps: 8
+  damping: 0.001
+
+experiment:
+  seeds: [0, 1, 2, 3, 4]
+  include_baseline: false
+  baseline_criterion: train_loss
+
+runs:
+  - name: baseline_full_mlp
+    criterion: train_loss
+    force_stage_schedule: false
+    growth:
+      enabled: false
+      stages: 1
+      patience: 2
+      mode: progressive
+
+  - name: fixed_subspace_s5_train_loss
+    criterion: train_loss
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 5
+      patience: 2
+      mode: fixed_subspace
+
+  - name: oneshot_s5_train_loss
+    criterion: train_loss
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 5
+      patience: 2
+      mode: one_shot
+
+  - name: progressive_s5_train_loss
+    criterion: train_loss
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 5
+      patience: 2
+      mode: progressive
+
+  - name: progressive_s10_train_loss
+    criterion: train_loss
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 10
+      patience: 2
+      mode: progressive

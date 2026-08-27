@@ -1,0 +1,124 @@
+data:
+  dataset: cifar100
+  root: ./data
+  batch_size: 128
+  eval_batch_size: 256
+  num_workers: 8
+  val_fraction: 0.1
+  image_size: 32
+  augmentation: cifar
+  pin_memory: true
+  persistent_workers: true
+  seed: 0
+  hessian_batch_size: 128
+
+model:
+  arch: resnet18
+  num_classes: 100
+  pretrained: false
+  image_size: 32
+
+optim:
+  name: sgd
+  lr: 0.1
+  weight_decay: 0.0005
+  momentum: 0.9
+  nesterov: true
+
+train:
+  epochs: 100
+  label_smoothing: 0.0
+  grad_clip_norm: 0.0
+  log_every: 50
+  amp: true
+  barrier_threshold: 0.1
+  history_flush_every: 5
+  show_batch_progress: false
+  force_stage_schedule_for_train_loss: false
+  force_stage_schedule_for_all_growth_runs: false
+  force_stage_schedule_weighting: stage_index
+  force_stage_schedule_gamma: 2.0
+  min_epochs_per_stage: 3
+  eval_test_every_epoch: false
+
+transition_metrics:
+  curve_points: 11
+  eval_batches: 2
+
+hessian:
+  enabled: true
+  eval_every: 1
+  power_iters: 10
+  trace_probes: 4
+  logdet_probes: 2
+  lanczos_steps: 8
+  damping: 0.001
+
+experiment:
+  seeds: [0, 1, 2]
+  include_baseline: false
+  baseline_criterion: val_acc
+
+runs:
+  - name: baseline_full_resnet18
+    criterion: val_acc
+    force_stage_schedule: false
+    growth:
+      enabled: false
+      stages: 1
+      patience: 2
+      mode: progressive
+
+  - name: growth_s3_val_acc
+    criterion: val_acc
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 3
+      patience: 2
+      mode: progressive
+
+  - name: growth_s5_val_acc
+    criterion: val_acc
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 5
+      patience: 2
+      mode: progressive
+
+  - name: growth_s10_val_acc
+    criterion: val_acc
+    force_stage_schedule: false
+    growth:
+      enabled: true
+      stages: 10
+      patience: 2
+      mode: progressive
+
+  - name: growth_s3_train_loss
+    criterion: train_loss
+    force_stage_schedule: true
+    growth:
+      enabled: true
+      stages: 3
+      patience: 2
+      mode: progressive
+
+  - name: growth_s5_train_loss
+    criterion: train_loss
+    force_stage_schedule: true
+    growth:
+      enabled: true
+      stages: 5
+      patience: 2
+      mode: progressive
+
+  - name: growth_s10_train_loss
+    criterion: train_loss
+    force_stage_schedule: true
+    growth:
+      enabled: true
+      stages: 10
+      patience: 2
+      mode: progressive
